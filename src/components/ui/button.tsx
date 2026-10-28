@@ -8,11 +8,21 @@ import { Text } from "./text";
 const variants = {
   primary: "bg-primary active:opacity-80",
   secondary: "bg-surface border border-border active:bg-surface-muted",
+  /** Translucent pill over photos ("Skip"). */
+  glass: "bg-glass active:opacity-80",
+} as const;
+
+// Gap lives here (not in the base classes) so two gap-* never compete.
+const alignments = {
+  center: "justify-center gap-3",
+  /** Provider buttons: logo and label line up across stacked buttons. */
+  start: "justify-start gap-8 pl-17",
 } as const;
 
 const sizes = {
-  md: "h-12 px-5",
-  lg: "h-14 px-6",
+  sm: { box: "h-10 px-4", text: "label" },
+  md: { box: "h-12 px-5", text: "button" },
+  lg: { box: "h-14 px-6", text: "button" },
 } as const;
 
 export type ButtonProps = Omit<PressableProps, "children"> & {
@@ -23,6 +33,7 @@ export type ButtonProps = Omit<PressableProps, "children"> & {
   leading?: ReactNode;
   /** Pinned to the trailing edge, e.g. an arrow icon. */
   trailing?: ReactNode;
+  align?: keyof typeof alignments;
   loading?: boolean;
   className?: string;
 };
@@ -33,6 +44,7 @@ export function Button({
   size = "lg",
   leading,
   trailing,
+  align = "center",
   loading,
   disabled,
   className,
@@ -46,9 +58,10 @@ export function Button({
       accessibilityState={{ disabled: inactive, busy: !!loading }}
       disabled={inactive}
       className={cn(
-        "flex-row items-center justify-center gap-3 rounded-full",
+        "flex-row items-center rounded-full",
         variants[variant],
-        sizes[size],
+        sizes[size].box,
+        loading ? alignments.center : alignments[align],
         disabled && "opacity-40",
         className,
       )}
@@ -59,7 +72,7 @@ export function Button({
       ) : (
         <>
           {leading}
-          <Text variant="button">{title}</Text>
+          <Text variant={sizes[size].text}>{title}</Text>
           {trailing ? <View className="absolute right-6">{trailing}</View> : null}
         </>
       )}

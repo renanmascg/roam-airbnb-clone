@@ -22,6 +22,21 @@ npx eas-cli@latest <cmd>    # EAS builds, submits, and updates (use instead of b
 - Routes live in `src/app/`: every file is a screen and `_layout.tsx` files define navigators. API routes are `src/app/api/*+api.ts`. Keep components, hooks, and utils outside `src/app/`.
 - `ios/` and `android/` are generated. Never create or edit them by hand; configure native behavior in `app.json` and config plugins.
 - Expo Go only includes its bundled native modules. After adding a library with native code, switch to a development build (`npx expo run:ios`).
+- Route map: the root `_layout.tsx` splits routes with `Stack.Protected` on `useAuth().user`.
+  - Signed out (`redirectTo="/home"`): `/` onboarding (3 slides, copy and photos in `src/components/onboarding/slides.ts`), plus the `(auth)` group with `/sign-up` → `/verify` and `/sign-in`.
+  - Signed in (`redirectTo="/"`): `/home`, a placeholder with sign out.
+  - `/design-system` is open to everyone.
+  - Screens never navigate after a successful sign-in; the guard moves the guest.
+  - Screens hide the native header and draw a token-styled back button (`AuthScreen`), because header colors would need raw values.
+- Auth runs on Clerk (`@clerk/expo`, development instance of app `roam`) behind `src/lib/auth/`.
+  - `auth-context.tsx` (`AuthProvider`, `useAuth`) is the only API screens use. Screens never import Clerk hooks. It exposes `isLoaded`, `user`, `pending`, `signUp`, `signIn`, `verifyCode`, `resendCode`, `signInWithGoogle` and `signOut`.
+  - The root layout renders nothing until `isLoaded`, so a cold start doesn't flash the signed-out screens. `tokenCache` (`expo-secure-store`) keeps the session across restarts.
+  - Sign up is name + email + password (min 8) + a 6-digit emailed code. Sign in is email + password, and a new device gets Clerk's emailed code on the same `/verify` screen (`pending.kind`). Google uses `useSSO()`. Apple is not offered.
+  - Custom flows use the method-based hooks (`signUp.password`, `verifications.verifyEmailCode`, `signIn.password`, `mfa.verifyEmailCode`, `finalize`), never the legacy `setActive`/`prepare*` API. The MCP's `custom-flows` snippet is legacy, so don't copy it.
+  - `errors.ts` maps Clerk error codes to guest-facing copy. Raw Clerk messages never reach screens. `validation.ts` holds the field rules.
+  - Dev instance settings (set through the Clerk MCP): password min length 8, first and last name enabled. Web sign-up shows Clerk's "Verify you are human" check, which automation can't pass. Test with `+clerk_test` emails (code `424242`) and the dev user `roamqa+clerk_test@example.com`.
+- Web is server-rendered (`web.output: "server"`), so a screen's first render must match on the server and the client. Never size layout from `useWindowDimensions` or `window`: measure with `onLayout`, or use flex, percentages, or a stretched SVG `viewBox`. Never read navigation state (`router.canGoBack()`) during render. Nested pressables are invalid HTML on web, so keep them as siblings.
+- The web dev server's file watcher sometimes misses new or edited files on this Windows setup. If changes don't show up, restart `npx expo start --clear`.
 
 ## Who owns what
 
@@ -37,9 +52,9 @@ Each tool has one job. Ask before moving a responsibility to a different tool.
 - **Analytics:** PostHog, identified through Clerk.
 - **Styling:** NativeWind v5 (Tailwind CSS v4) through `className`, set up per https://www.nativewind.dev/v5/llms-full.txt. Tokens live in `src/global.css` (`@theme`), which `src/app/_layout.tsx` imports once. No Babel config: `metro.config.js` (`withNativewind`) handles the className rewrite. `nativewind`, `react-native-css`, `tailwindcss`, `@tailwindcss/postcss` and `lightningcss` stay on exact versions, and `lightningcss` is also pinned in `overrides`. Upgrade them together, following the NativeWind docs. The release candidate was tested on Expo 57, and this app runs it on 58.
 - **Design system:** `src/global.css` is the only place visual values live. The palette, text sizes, font weights and radii are closed (Tailwind defaults are reset), so use Roam tokens (`bg-primary`, `text-ink-muted`, `rounded-lg`, `type-body`, `shadow-raised`) and never hex, px or arbitrary values in screens. Spacing is the 4-pt numeric scale (`--spacing: 4px`, and `rem` is pinned to 16 on native). Light mode only (`userInterfaceStyle: "light"`), with semantic token names so a dark palette can be added in one place.
-- **Shared components:** `src/components/ui/` (imported from `@/components/ui`) holds Text, Icon, Button, IconButton, TextField, Chip, Tag, Alert, Toggle, Stepper, SegmentedControl, ListRow/ListGroup, PolicyCard, ListingCard, TabBar, and Logo. Screens compose these. A new variant goes into the component, not into a caller's className. Callers' `className` changes layout only, because NativeWind resolves conflicts by CSS order, not class order. `/design-system` previews everything.
+- **Shared components:** `src/components/ui/` (imported from `@/components/ui`) holds Text, Icon, Button, IconButton, TextField, Chip, Tag, Alert, Toggle, Stepper, SegmentedControl, ListRow/ListGroup, PolicyCard, ListingCard, TabBar, and Logo. Screens compose these. A new variant goes into the component, not into a caller's className. Callers' `className` changes layout only, because NativeWind resolves conflicts by CSS order, not class order. `/design-system` previews everything. Over photos, use Button `glass` and Tag `overlay`. Screen-private pieces live in `src/components/<screen>/` (e.g. `onboarding/`, `auth/`) until a second screen needs them.
 - **Fonts:** Plus Jakarta Sans static TTFs in `assets/fonts/`, named by PostScript name. Native embeds them through the `expo-font` plugin in `app.json`. Web loads them at runtime with `src/lib/fonts.web.ts`, which never blocks rendering because of SSR hydration. Set weight with `font-medium`/`font-bold` etc. (they map to font families), never `fontWeight`.
-- **Icons:** Lucide (`lucide-react-native`), always through `Icon` so `text-*`/`fill-*` classes color them. Brand logos (the wordmark, Google's G) are image assets, not icons.
+- **Icons:** Lucide (`lucide-react-native`), always through `Icon` so `text-*`/`fill-*` classes color them. Brand logos are image assets, not icons: Google's official G is `assets/images/google-g.svg` via `GoogleMark` (never recolor it); the wordmark is still a placeholder.
 
 ## Rules
 

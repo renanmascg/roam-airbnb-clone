@@ -1,18 +1,20 @@
+import { Image } from "expo-image";
 import { Stack } from "expo-router";
 import {
   ArrowRight,
+  ChevronLeft,
   Bath,
   Bookmark,
   Building2,
   Calendar,
   CreditCard,
   FileText,
-  Globe,
   Heart,
   House,
   List,
   Lock,
   Luggage,
+  Mail,
   Map,
   MapPin,
   MessageSquareText,
@@ -33,6 +35,7 @@ import {
   Alert,
   Button,
   Chip,
+  GoogleMark,
   Icon,
   IconButton,
   ListGroup,
@@ -63,9 +66,11 @@ const swatches = [
 
 const ramp = [
   { variant: "display", sample: "Find your next stay", spec: "Bold 56 / 56" },
+  { variant: "hero", sample: "Find a stay that fits your story", spec: "ExtraBold 40 / 42, -1 tracking" },
   { variant: "heading", sample: "Modern Cabin with Hot Tub", spec: "Bold 28 / 34" },
   { variant: "title", sample: "Modern Cabin with Hot Tub", spec: "Bold 18 / 22" },
   { variant: "body", sample: "From mountain cabins to oceanfront villas, roam helps you find unforgettable stays.", spec: "Regular 16 / 24" },
+  { variant: "lead", sample: "From mountain cabins to oceanfront villas.", spec: "Regular 16 / 20" },
   { variant: "label", sample: "Cabins in California", spec: "Medium 15 / 20" },
   { variant: "caption", sample: "Lake Arrowhead, CA", spec: "Medium 14 / 20" },
   { variant: "small", sample: "Full refund up to 7 days before check-in.", spec: "Regular 12 / 16" },
@@ -112,7 +117,10 @@ export default function DesignSystemScreen() {
       <Stack.Screen options={{ title: "Design system" }} />
       <ScrollView className="flex-1 bg-surface-muted" contentContainerClassName="gap-4 p-4 pb-12">
         <Section title="01. Brand">
-          <Logo />
+          <View className="flex-row items-end justify-between">
+            <Logo />
+            <Logo size="sm" />
+          </View>
           <Text variant="heading" weight="regular" tone="muted">
             Find unforgettable stays for every kind of trip.
           </Text>
@@ -147,15 +155,23 @@ export default function DesignSystemScreen() {
 
         <Section title="04. Buttons">
           <Button title="Book this stay" trailing={<Icon as={ArrowRight} />} />
-          {/* PLACEHOLDER: Globe stands in for the Google "G" logo until the brand asset is added. */}
-          <Button title="Continue with Google" variant="secondary" leading={<Icon as={Globe} />} />
+          <Button title="Continue with Google" variant="secondary" leading={<GoogleMark />} />
+          <Button title="Continue with Google" variant="secondary" size="md" align="start" leading={<GoogleMark />} />
           <Button title="Book this stay" loading />
           <Button title="Book this stay" disabled />
+          <View className="h-24 justify-center overflow-hidden rounded-lg">
+            <Image source={sampleStay.imageUrl} contentFit="cover" style={{ position: "absolute", width: "100%", height: "100%" }} />
+            <View className="flex-row items-center justify-between px-4">
+              <Tag tone="overlay" label="Whistler, BC" icon={MapPin} />
+              <Button title="Skip" variant="glass" size="sm" />
+            </View>
+          </View>
           <View className="flex-row gap-4">
             <IconButton icon={Heart} accessibilityLabel="Save" />
             <IconButton icon={Share} accessibilityLabel="Share" />
             <IconButton icon={Search} accessibilityLabel="Search" />
             <IconButton icon={Bookmark} accessibilityLabel="Bookmark" />
+            <IconButton icon={ChevronLeft} size="md" variant="outline" accessibilityLabel="Back" />
           </View>
         </Section>
 
@@ -173,6 +189,8 @@ export default function DesignSystemScreen() {
           <TextField icon={User} placeholder="Enter your name" />
           <TextField icon={User} defaultValue="Joanna Smith" autoFocus />
           <TextField icon={Lock} placeholder="Password" defaultValue="password1" secureTextEntry />
+          <TextField icon={Mail} label="Email address" placeholder="you@example.com" />
+          <TextField icon={Mail} label="Email address" defaultValue="you@" error="Enter a valid email address, like you@example.com." />
         </Section>
 
         <Section title="06. Filter chips">

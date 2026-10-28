@@ -13,7 +13,14 @@ const tones = {
   info: { box: "bg-info-soft", text: "info" },
   /** Outlined amenity tag on listing cards ("Hot Tub"). */
   neutral: { box: "bg-surface border border-border", text: "ink" },
+  /** Dark translucent label over photos ("Whistler, BC"). */
+  overlay: { box: "bg-ink/40 border border-white/30", text: "inverse" },
 } as const satisfies Record<string, { box: string; text: TextTone }>;
+
+const iconColors: Partial<Record<keyof typeof tones, string>> = {
+  favorite: "fill-primary text-ink",
+  overlay: "text-white",
+};
 
 const sizes = {
   sm: { box: "h-8 gap-1 px-2.5", text: "small", icon: "xs" },
@@ -40,7 +47,7 @@ export function Tag({ label, tone = "neutral", size = "md", icon, className }: T
           as={glyph}
           size={s.icon}
           filled={tone === "favorite"}
-          className={tone === "favorite" ? "fill-primary text-ink" : undefined}
+          className={iconColors[tone]}
         />
       ) : null}
       <Text variant={s.text} tone={t.text} weight={size === "sm" ? "medium" : undefined}>

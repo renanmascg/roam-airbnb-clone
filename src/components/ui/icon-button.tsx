@@ -8,11 +8,14 @@ import { Icon } from "./icon";
 const variants = {
   muted: "bg-surface-muted active:bg-border",
   surface: "bg-surface shadow-card active:bg-surface-muted",
+  /** White with a hairline, e.g. the back button on light screens. */
+  outline: "bg-surface border border-border active:bg-surface-muted",
 } as const;
 
 const sizes = {
   sm: { box: "size-8", icon: "sm" },
-  md: { box: "size-14", icon: "lg" },
+  md: { box: "size-11", icon: "md" },
+  lg: { box: "size-14", icon: "lg" },
 } as const;
 
 export type IconButtonProps = Omit<PressableProps, "children"> & {
@@ -30,7 +33,7 @@ export type IconButtonProps = Omit<PressableProps, "children"> & {
 export function IconButton({
   icon,
   variant = "muted",
-  size = "md",
+  size = "lg",
   active,
   iconClassName,
   className,

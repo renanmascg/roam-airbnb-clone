@@ -4,9 +4,11 @@ import { cn } from "@/lib/cn";
 
 const variants = {
   display: "type-display",
+  hero: "type-hero",
   heading: "type-heading",
   title: "type-title",
   body: "type-body",
+  lead: "type-lead",
   label: "type-label",
   caption: "type-caption",
   small: "type-small",

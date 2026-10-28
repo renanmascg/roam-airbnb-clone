@@ -1,6 +1,7 @@
 export * from "./alert";
 export * from "./button";
 export * from "./chip";
+export * from "./google-mark";
 export * from "./icon";
 export * from "./icon-button";
 export * from "./list-row";
